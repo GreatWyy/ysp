@@ -90,9 +90,40 @@ const App: React.FC = () => {
   const [showWarning, setShowWarning] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef02 = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>(['Books']);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+
+  const getManagerVideo = async () => {
+    try {
+      // 获取摄像头视频流
+      let mediaStream01 = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: 480,
+          height: 256,
+        },
+      });
+
+      if (videoRef02.current && mediaStream01) {
+        // 将视频流绑定到 video 元素
+        videoRef02.current.srcObject = mediaStream01;
+        setMediaStream(mediaStream01);
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+    }
+  };
+
+  const closeManagerVideo = () => {
+    if (mediaStream && videoRef02.current) {
+      mediaStream?.getTracks().forEach((track) => {
+        track.stop();
+      });
+      videoRef02.current.srcObject = null;
+    }
+  };
 
   const handleChange = (tag: string, checked: boolean) => {
     const nextSelectedTags = checked
@@ -217,24 +248,34 @@ const App: React.FC = () => {
               <Alert message="此用户涉嫌多次不文明操作！" banner closable />
             )}
 
-            <Space size={40}>
+            <Space size={50}>
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '100px',
+                  gap: '50px',
                   justifyContent: 'center',
                 }}
               >
                 <video
                   ref={videoRef}
-                  width={450}
+                  width={400}
                   height={400}
                   loop
                   autoPlay
                   controls
                   muted
                   src={playVideo ? require('./test.mp4') : ''}
+                ></video>
+                {/* 客服视频流 */}
+                <video
+                  ref={videoRef02}
+                  width={400}
+                  height={400}
+                  loop
+                  autoPlay
+                  controls
+                  muted
                 ></video>
 
                 <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
@@ -250,6 +291,7 @@ const App: React.FC = () => {
                     icon={<PhoneOutlined />}
                     onClick={() => {
                       setPlayVideo(true);
+                      getManagerVideo();
                     }}
                   >
                     {' 接通'}
@@ -258,6 +300,7 @@ const App: React.FC = () => {
                     type="primary"
                     icon={<PhoneOutlined />}
                     onClick={() => {
+                      closeManagerVideo();
                       setPlayVideo(false);
                     }}
                   >
