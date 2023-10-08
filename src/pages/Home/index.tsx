@@ -23,6 +23,7 @@ import {
 } from 'antd';
 // import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import React, { useRef, useState } from 'react';
+
 const { Footer, Sider, Content } = Layout;
 const { Meta } = Card;
 const { CheckableTag } = Tag;
@@ -92,7 +93,7 @@ const App: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>(['Books']);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleChange = (tag: string, checked: boolean) => {
     const nextSelectedTags = checked
@@ -103,30 +104,48 @@ const App: React.FC = () => {
   };
 
   const sendImageDataToServer = async (imageData: string) => {
-    // try {
-    //   // 创建一个 FormData 对象，用于包装图像数据
-    //   const formData = new FormData();
-    //   formData.append('image', imageData);
+    try {
+      // 创建一个 FormData 对象，用于包装图像数据
+      const formData = new FormData();
+      formData.append('image', imageData);
 
-    //   // 使用 fetch 发送 POST 请求
-    //   const response = await fetch('/upload', {
-    //     method: 'POST',
-    //     body: formData,
-    //   });
+      // 使用 fetch 发送 POST 请求
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    //   if (response.ok) {
-    //     console.log('图像上传成功');
-    //   } else {
-    //     console.error('图像上传失败');
-    //   }
-    // } catch (error) {
-    //   console.error('上传过程中出现错误:', error);
-    // }
+      if (response.ok) {
+        console.log('图像上传成功');
+      } else {
+        console.error('图像上传失败');
+      }
+    } catch (error) {
+      console.error('上传过程中出现错误:', error);
+    }
     console.log('发送图像数据到后端:', imageData);
 
     // 根据请求的返回结果将信息渲染在页面（用户信息，推荐产品信息，历史标签等）
     console.log(showWarning);
     setShowWarning(true);
+  };
+
+  const handTagCommit = async (selectedTags: string[]) => {
+    const tags = JSON.stringify(selectedTags);
+    try {
+      const response = await fetch('http://127.0.0.1:5000/tagUpload', {
+        method: 'POST',
+        body: tags,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        console.log('标签上传成功');
+      } else {
+        console.error('标签上传失败');
+      }
+    } catch (error) {
+      console.error('上传过程中出现错误:', error);
+    }
   };
 
   const handleCaptureImage = () => {
@@ -290,6 +309,7 @@ const App: React.FC = () => {
                       type="primary"
                       onClick={() => {
                         console.log('提交');
+                        handTagCommit(selectedTags);
                         setOpen(false);
                       }}
                     >
