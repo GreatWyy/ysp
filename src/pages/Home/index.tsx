@@ -1,6 +1,6 @@
 import {
   BarChartOutlined,
-  CheckCircleTwoTone,
+  ClearOutlined,
   EditOutlined,
   EllipsisOutlined,
   HighlightOutlined,
@@ -30,27 +30,27 @@ const tagsData = ['辱骂威胁', '恶意搅扰', '无理要求', '欺诈行为'
 const items: DescriptionsProps['items'] = [
   {
     key: '1',
-    label: 'UserName',
+    label: '用户姓名',
     children: 'Zhou Maomao',
   },
   {
     key: '2',
-    label: 'Telephone',
+    label: '电话',
     children: '1810000000',
   },
   {
     key: '3',
-    label: 'Live',
+    label: '户籍地',
     children: 'Hangzhou, Zhejiang',
   },
   {
     key: '4',
-    label: 'Remark',
+    label: '用户标签',
     children: 'empty',
   },
   {
     key: '5',
-    label: 'Address',
+    label: '住址',
     children: 'No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China',
   },
 ];
@@ -190,6 +190,9 @@ const App: React.FC = () => {
     setOpen(false);
   };
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
   return (
     <Layout>
       <Space>
@@ -208,6 +211,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="客服信息"
+                description="交通银行软件开发团队（合肥）"
               />
             </Card>
             <Card>
@@ -216,7 +220,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="客服状态"
-                description="This is the description"
+                description="在线"
               />
             </Card>
             <Card>
@@ -225,7 +229,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="通话数据"
-                description="This is the description"
+                description="接听成功率:100%"
               />
             </Card>
             {capturedImage && (
@@ -367,11 +371,14 @@ const App: React.FC = () => {
                 shape="circle"
                 type="primary"
                 style={{ right: 94 }}
-                icon={<CheckCircleTwoTone />}
+                onClick={() => {
+                  handleRefresh();
+                }}
+                icon={<ClearOutlined />}
               />
             </Space>
-            <Descriptions title="User Info" items={items} bordered />
-            <Descriptions title="Product" items={items} bordered />
+            <Descriptions title="用户信息" items={items} bordered />
+            <Descriptions title="产品推荐" items={items} bordered />
           </Content>
           <Footer style={footerStyle}> Design ©2023 Created Hefei Team</Footer>
         </Space>
