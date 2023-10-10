@@ -1,6 +1,6 @@
 import {
   BarChartOutlined,
-  CheckCircleTwoTone,
+  ClearOutlined,
   EditOutlined,
   EllipsisOutlined,
   HighlightOutlined,
@@ -22,39 +22,14 @@ import {
   Tag,
 } from 'antd';
 // import { CheckboxValueType } from 'antd/es/checkbox/Group';
+import md5 from 'blueimp-md5';
 import React, { useRef, useState } from 'react';
-
 const { Footer, Sider, Content } = Layout;
 const { Meta } = Card;
 const { CheckableTag } = Tag;
 const tagsData = ['辱骂威胁', '恶意搅扰', '无理要求', '欺诈行为'];
-const items: DescriptionsProps['items'] = [
-  {
-    key: '1',
-    label: 'UserName',
-    children: 'Zhou Maomao',
-  },
-  {
-    key: '2',
-    label: 'Telephone',
-    children: '1810000000',
-  },
-  {
-    key: '3',
-    label: 'Live',
-    children: 'Hangzhou, Zhejiang',
-  },
-  {
-    key: '4',
-    label: 'Remark',
-    children: 'empty',
-  },
-  {
-    key: '5',
-    label: 'Address',
-    children: 'No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China',
-  },
-];
+// const [info,setInfo]=useState({"name":"sq"})
+
 // const headerStyle: React.CSSProperties = {
 //   textAlign: 'center',
 //   color: '#fff',
@@ -91,9 +66,115 @@ const App: React.FC = () => {
   const [showWarning, setShowWarning] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef02 = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [userInfo, setUserInfo] = useState({
+    user_Name: '',
+    age: '',
+    contact_info: '',
+    education_level: '',
+    job: '',
+    deep_info: '',
+    address: '',
+    user_tag: '',
+    user_product: '',
+    product_time: '',
+    product_money: '',
+    product_description: '',
+  });
+
+  const items_user: DescriptionsProps['items'] = [
+    {
+      key: '1',
+      label: '用户姓名',
+      children: userInfo.user_Name,
+    },
+    {
+      key: '2',
+      label: '电话',
+      children: userInfo.contact_info,
+    },
+    {
+      key: '3',
+      label: '年纪',
+      children: userInfo.age,
+    },
+    {
+      key: '4',
+      label: '户籍地',
+      children: userInfo.address,
+    },
+    {
+      key: '5',
+      label: '用户标签',
+      children: userInfo.user_tag,
+    },
+    {
+      key: '6',
+      label: '用户特征信息编码',
+      children: userInfo.deep_info ? md5(userInfo.deep_info) : '',
+    },
+    {
+      key: '7',
+      label: '用户职业',
+      children: userInfo.job,
+    },
+  ];
+
+  const items_product: DescriptionsProps['items'] = [
+    {
+      key: '1',
+      label: '金融产品',
+      children: userInfo.user_product,
+    },
+    {
+      key: '2',
+      label: '产品时效',
+      children: userInfo.product_time,
+    },
+    {
+      key: '3',
+      label: '产品金额',
+      children: userInfo.product_money,
+    },
+    {
+      key: '4',
+      label: '产品描述',
+      children: userInfo.product_description,
+    },
+  ];
+
+  const getManagerVideo = async () => {
+    try {
+      // 获取摄像头视频流
+      let mediaStream01 = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: 480,
+          height: 256,
+        },
+      });
+
+      if (videoRef02.current && mediaStream01) {
+        // 将视频流绑定到 video 元素
+        videoRef02.current.srcObject = mediaStream01;
+        setMediaStream(mediaStream01);
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+    }
+  };
+
+  const closeManagerVideo = () => {
+    if (mediaStream && videoRef02.current) {
+      mediaStream?.getTracks().forEach((track) => {
+        track.stop();
+      });
+      videoRef02.current.srcObject = null;
+    }
+  };
 
   const handleChange = (tag: string, checked: boolean) => {
     const nextSelectedTags = checked
@@ -123,32 +204,71 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('上传过程中出现错误:', error);
     }
-    console.log('发送图像数据到后端:', imageData);
+    //console.log('发送图像数据到后端:', imageData);
 
     // 根据请求的返回结果将信息渲染在页面（用户信息，推荐产品信息，历史标签等）
     console.log(showWarning);
     setShowWarning(true);
   };
 
-  const handTagCommit = async (selectedTags: string[]) => {
-    const tags = JSON.stringify(selectedTags);
+  const getUserInfo = async () => {
+    const response = await fetch('http://127.0.0.1:5000/getInfo');
+    const body = await response.json();
     try {
-      const response = await fetch('http://127.0.0.1:5000/tagUpload', {
+      setUserInfo(body.data[0]);
+      console.log(body.data[0]);
+    } catch {
+      console.log('未获取数据');
+    }
+  };
+  // const updatedItems = items.map((item) => {
+  //   // 根据自己的需求更新 children 属性的值
+  //   // 这里只是一个示例，可以根据实际情况进行更改
+  //   if (item.key === '1') {
+  //     return {
+  //       ...item,
+  //       children: userInfo.user_Name,
+  //     };
+  //   } else if (item.key === '2') {
+  //     return {
+  //       ...item,
+  //       children: '1234567890',
+  //     };
+  //   } else if (item.key === '3') {
+  //     return {
+  //       ...item,
+  //       children: '北京市',
+  //     };
+  //   } else if (item.key === '4') {
+  //     return {
+  //       ...item,
+  //       children: 'VIP',
+  //     };
+  //   } else if (item.key === '5') {
+  //     return {
+  //       ...item,
+  //       children: '某个街道',
+  //     };
+  //   }
+  //   return item;
+  // });
+
+  const postUserTag = async () => {
+    try {
+      await fetch('http://127.0.0.1:5000/tagUpload', {
         method: 'POST',
-        body: tags,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedTags),
       });
-      if (response.ok) {
-        console.log('标签上传成功');
-      } else {
-        console.error('标签上传失败');
-      }
-    } catch (error) {
-      console.error('上传过程中出现错误:', error);
+      console.log('标签已插入');
+    } catch {
+      console.log('标签插入失败');
     }
   };
 
-  const handleCaptureImage = () => {
+  const handleCaptureImage = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -166,7 +286,9 @@ const App: React.FC = () => {
       setCapturedImage(imageData);
 
       // 发送 imageData 到后端服务器
-      sendImageDataToServer(imageData);
+      await sendImageDataToServer(imageData);
+      await getUserInfo();
+      // updatedItems;
     }
   };
 
@@ -178,6 +300,9 @@ const App: React.FC = () => {
     setOpen(false);
   };
 
+  const handleRefresh = () => {
+    window.location.reload();
+  };
   return (
     <Layout>
       <Space>
@@ -196,6 +321,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="客服信息"
+                description="交通银行软件开发团队（合肥）"
               />
             </Card>
             <Card>
@@ -204,7 +330,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="客服状态"
-                description="This is the description"
+                description="在线"
               />
             </Card>
             <Card>
@@ -213,7 +339,7 @@ const App: React.FC = () => {
                   <Avatar src="https://xsgames.co/randomusers/avatar.php?g=pixel" />
                 }
                 title="通话数据"
-                description="This is the description"
+                description="接听成功率:100%"
               />
             </Card>
             {capturedImage && (
@@ -236,24 +362,34 @@ const App: React.FC = () => {
               <Alert message="此用户涉嫌多次不文明操作！" banner closable />
             )}
 
-            <Space size={40}>
+            <Space size={50}>
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '100px',
+                  gap: '50px',
                   justifyContent: 'center',
                 }}
               >
                 <video
                   ref={videoRef}
-                  width={450}
+                  width={400}
                   height={400}
                   loop
                   autoPlay
                   controls
                   muted
                   src={playVideo ? require('./test.mp4') : ''}
+                ></video>
+                {/* 客服视频流 */}
+                <video
+                  ref={videoRef02}
+                  width={400}
+                  height={400}
+                  loop
+                  autoPlay
+                  controls
+                  muted
                 ></video>
 
                 <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
@@ -269,6 +405,7 @@ const App: React.FC = () => {
                     icon={<PhoneOutlined />}
                     onClick={() => {
                       setPlayVideo(true);
+                      getManagerVideo();
                     }}
                   >
                     {' 接通'}
@@ -277,6 +414,7 @@ const App: React.FC = () => {
                     type="primary"
                     icon={<PhoneOutlined />}
                     onClick={() => {
+                      closeManagerVideo();
                       setPlayVideo(false);
                     }}
                   >
@@ -309,7 +447,8 @@ const App: React.FC = () => {
                       type="primary"
                       onClick={() => {
                         console.log('提交');
-                        handTagCommit(selectedTags);
+                        postUserTag();
+
                         setOpen(false);
                       }}
                     >
@@ -344,11 +483,14 @@ const App: React.FC = () => {
                 shape="circle"
                 type="primary"
                 style={{ right: 94 }}
-                icon={<CheckCircleTwoTone />}
+                onClick={() => {
+                  handleRefresh();
+                }}
+                icon={<ClearOutlined />}
               />
             </Space>
-            <Descriptions title="User Info" items={items} bordered />
-            <Descriptions title="Product" items={items} bordered />
+            <Descriptions title="用户信息" items={items_user} bordered />
+            <Descriptions title="产品推荐" items={items_product} bordered />
           </Content>
           <Footer style={footerStyle}> Design ©2023 Created Hefei Team</Footer>
         </Space>
