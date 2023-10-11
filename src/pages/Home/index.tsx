@@ -21,23 +21,12 @@ import {
   Space,
   Tag,
 } from 'antd';
-// import { CheckboxValueType } from 'antd/es/checkbox/Group';
 import md5 from 'blueimp-md5';
 import React, { useRef, useState } from 'react';
 const { Footer, Sider, Content } = Layout;
 const { Meta } = Card;
 const { CheckableTag } = Tag;
 const tagsData = ['辱骂威胁', '恶意搅扰', '无理要求', '欺诈行为'];
-// const [info,setInfo]=useState({"name":"sq"})
-
-// const headerStyle: React.CSSProperties = {
-//   textAlign: 'center',
-//   color: '#fff',
-//   height: 64,
-//   paddingInline: 50,
-//   lineHeight: '64px',
-//   backgroundColor: '#7dbcea',
-// };
 
 const contentStyle: React.CSSProperties = {
   textAlign: 'center',
@@ -212,46 +201,15 @@ const App: React.FC = () => {
   };
 
   const getUserInfo = async () => {
-    const response = await fetch('http://127.0.0.1:5000/getInfo');
-    const body = await response.json();
     try {
+      const response = await fetch('http://127.0.0.1:5000/getInfo');
+      const body = await response.json();
       setUserInfo(body.data[0]);
       console.log(body.data[0]);
     } catch {
       console.log('未获取数据');
     }
   };
-  // const updatedItems = items.map((item) => {
-  //   // 根据自己的需求更新 children 属性的值
-  //   // 这里只是一个示例，可以根据实际情况进行更改
-  //   if (item.key === '1') {
-  //     return {
-  //       ...item,
-  //       children: userInfo.user_Name,
-  //     };
-  //   } else if (item.key === '2') {
-  //     return {
-  //       ...item,
-  //       children: '1234567890',
-  //     };
-  //   } else if (item.key === '3') {
-  //     return {
-  //       ...item,
-  //       children: '北京市',
-  //     };
-  //   } else if (item.key === '4') {
-  //     return {
-  //       ...item,
-  //       children: 'VIP',
-  //     };
-  //   } else if (item.key === '5') {
-  //     return {
-  //       ...item,
-  //       children: '某个街道',
-  //     };
-  //   }
-  //   return item;
-  // });
 
   const postUserTag = async () => {
     try {
