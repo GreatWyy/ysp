@@ -20,7 +20,9 @@ import {
   Modal,
   Space,
   Tag,
+  notification,
 } from 'antd';
+import type { NotificationPlacement } from 'antd/es/notification/interface';
 import md5 from 'blueimp-md5';
 import React, { useRef, useState } from 'react';
 const { Footer, Sider, Content } = Layout;
@@ -261,6 +263,17 @@ const App: React.FC = () => {
   const handleRefresh = () => {
     window.location.reload();
   };
+
+  const [api, contextHolder] = notification.useNotification();
+
+  const openNotification = (placement: NotificationPlacement) => {
+    api.info({
+      message: '提示信息',
+      description: '系统识别到客户焦虑或紧张，请进一步进行安全检查！',
+      placement,
+    });
+  };
+
   return (
     <Layout>
       <Space>
@@ -329,6 +342,7 @@ const App: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
+                {contextHolder}
                 <video
                   ref={videoRef}
                   width={400}
@@ -337,6 +351,9 @@ const App: React.FC = () => {
                   autoPlay
                   controls
                   muted
+                  onMouseEnter={() => {
+                    openNotification('topLeft');
+                  }}
                   src={playVideo ? require('./test.mp4') : ''}
                 ></video>
                 {/* 客服视频流 */}
