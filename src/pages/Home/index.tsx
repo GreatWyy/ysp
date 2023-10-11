@@ -21,47 +21,12 @@ import {
   Space,
   Tag,
 } from 'antd';
-// import { CheckboxValueType } from 'antd/es/checkbox/Group';
+import md5 from 'blueimp-md5';
 import React, { useRef, useState } from 'react';
 const { Footer, Sider, Content } = Layout;
 const { Meta } = Card;
 const { CheckableTag } = Tag;
 const tagsData = ['辱骂威胁', '恶意搅扰', '无理要求', '欺诈行为'];
-const items: DescriptionsProps['items'] = [
-  {
-    key: '1',
-    label: '用户姓名',
-    children: 'Zhou Maomao',
-  },
-  {
-    key: '2',
-    label: '电话',
-    children: '1810000000',
-  },
-  {
-    key: '3',
-    label: '户籍地',
-    children: 'Hangzhou, Zhejiang',
-  },
-  {
-    key: '4',
-    label: '用户标签',
-    children: 'empty',
-  },
-  {
-    key: '5',
-    label: '住址',
-    children: 'No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China',
-  },
-];
-// const headerStyle: React.CSSProperties = {
-//   textAlign: 'center',
-//   color: '#fff',
-//   height: 64,
-//   paddingInline: 50,
-//   lineHeight: '64px',
-//   backgroundColor: '#7dbcea',
-// };
 
 const contentStyle: React.CSSProperties = {
   textAlign: 'center',
@@ -93,8 +58,83 @@ const App: React.FC = () => {
   const videoRef02 = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>(['Books']);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [userInfo, setUserInfo] = useState({
+    user_Name: '',
+    age: '',
+    contact_info: '',
+    education_level: '',
+    job: '',
+    deep_info: '',
+    address: '',
+    user_tag: '',
+    user_product: '',
+    product_time: '',
+    product_money: '',
+    product_description: '',
+  });
+
+  const items_user: DescriptionsProps['items'] = [
+    {
+      key: '1',
+      label: '用户姓名',
+      children: userInfo.user_Name,
+    },
+    {
+      key: '2',
+      label: '电话',
+      children: userInfo.contact_info,
+    },
+    {
+      key: '3',
+      label: '年纪',
+      children: userInfo.age,
+    },
+    {
+      key: '4',
+      label: '户籍地',
+      children: userInfo.address,
+    },
+    {
+      key: '5',
+      label: '用户标签',
+      children: userInfo.user_tag,
+    },
+    {
+      key: '6',
+      label: '用户特征信息编码',
+      children: userInfo.deep_info ? md5(userInfo.deep_info) : '',
+    },
+    {
+      key: '7',
+      label: '用户职业',
+      children: userInfo.job,
+    },
+  ];
+
+  const items_product: DescriptionsProps['items'] = [
+    {
+      key: '1',
+      label: '金融产品',
+      children: userInfo.user_product,
+    },
+    {
+      key: '2',
+      label: '产品时效',
+      children: userInfo.product_time,
+    },
+    {
+      key: '3',
+      label: '产品金额',
+      children: userInfo.product_money,
+    },
+    {
+      key: '4',
+      label: '产品描述',
+      children: userInfo.product_description,
+    },
+  ];
 
   const getManagerVideo = async () => {
     try {
@@ -134,33 +174,59 @@ const App: React.FC = () => {
   };
 
   const sendImageDataToServer = async (imageData: string) => {
-    // try {
-    //   // 创建一个 FormData 对象，用于包装图像数据
-    //   const formData = new FormData();
-    //   formData.append('image', imageData);
+    try {
+      // 创建一个 FormData 对象，用于包装图像数据
+      const formData = new FormData();
+      formData.append('image', imageData);
 
-    //   // 使用 fetch 发送 POST 请求
-    //   const response = await fetch('/upload', {
-    //     method: 'POST',
-    //     body: formData,
-    //   });
+      // 使用 fetch 发送 POST 请求
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    //   if (response.ok) {
-    //     console.log('图像上传成功');
-    //   } else {
-    //     console.error('图像上传失败');
-    //   }
-    // } catch (error) {
-    //   console.error('上传过程中出现错误:', error);
-    // }
-    console.log('发送图像数据到后端:', imageData);
+      if (response.ok) {
+        console.log('图像上传成功');
+      } else {
+        console.error('图像上传失败');
+      }
+    } catch (error) {
+      console.error('上传过程中出现错误:', error);
+    }
+    //console.log('发送图像数据到后端:', imageData);
 
     // 根据请求的返回结果将信息渲染在页面（用户信息，推荐产品信息，历史标签等）
     console.log(showWarning);
     setShowWarning(true);
   };
 
-  const handleCaptureImage = () => {
+  const getUserInfo = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/getInfo');
+      const body = await response.json();
+      setUserInfo(body.data[0]);
+      console.log(body.data[0]);
+    } catch {
+      console.log('未获取数据');
+    }
+  };
+
+  const postUserTag = async () => {
+    try {
+      await fetch('http://127.0.0.1:5000/tagUpload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedTags),
+      });
+      console.log('标签已插入');
+    } catch {
+      console.log('标签插入失败');
+    }
+  };
+
+  const handleCaptureImage = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -178,7 +244,9 @@ const App: React.FC = () => {
       setCapturedImage(imageData);
 
       // 发送 imageData 到后端服务器
-      sendImageDataToServer(imageData);
+      await sendImageDataToServer(imageData);
+      await getUserInfo();
+      // updatedItems;
     }
   };
 
@@ -337,6 +405,8 @@ const App: React.FC = () => {
                       type="primary"
                       onClick={() => {
                         console.log('提交');
+                        postUserTag();
+
                         setOpen(false);
                       }}
                     >
@@ -377,8 +447,8 @@ const App: React.FC = () => {
                 icon={<ClearOutlined />}
               />
             </Space>
-            <Descriptions title="用户信息" items={items} bordered />
-            <Descriptions title="产品推荐" items={items} bordered />
+            <Descriptions title="用户信息" items={items_user} bordered />
+            <Descriptions title="产品推荐" items={items_product} bordered />
           </Content>
           <Footer style={footerStyle}> Design ©2023 Created Hefei Team</Footer>
         </Space>
